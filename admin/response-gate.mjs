@@ -1,0 +1,1 @@
+export function createResponseGate(){let epoch=0,latest=0;return {invalidate(){epoch++;},async run(operation,{latest:onlyLatest=false}={}){const started=epoch,sequence=onlyLatest?++latest:latest;const value=await operation();if(started!==epoch||(onlyLatest&&sequence!==latest))throw Error('请求已结束或过期。');return value;}};}
