@@ -1,5 +1,5 @@
-import {SCENES,MATCH_RULE} from './litter-scenes.mjs';
-import {normalizeStroke,matchRegions} from './annotation-geometry.mjs';
+import {SCENES,MATCH_RULE} from './litter-scenes.mjs?v=20261101-ui1';
+import {normalizeStroke,matchRegions} from './annotation-geometry.mjs?v=20261101-ui1';
 const CONDITIONS=['engagement','completion'];
 const METHODS=['mouse','touch','pen'];
 const time=v=>Number.isFinite(v)&&v>=0;

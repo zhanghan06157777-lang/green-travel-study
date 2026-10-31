@@ -1,5 +1,5 @@
-import {config} from '../config.mjs';import {esc} from '../task/view.mjs';import {renderDetail,time} from './render.mjs';
-import {createResponseGate} from './response-gate.mjs';
+import {config} from '../config.mjs?v=20261101-ui1';import {esc} from '../task/view.mjs?v=20261101-ui1';import {renderDetail,time} from './render.mjs?v=20261101-ui1';
+import {createResponseGate} from './response-gate.mjs?v=20261101-ui1';
 const sessionGate=createResponseGate(),detailGate=createResponseGate();
 const $=id=>document.getElementById(id);let session=null,page=0,total=0,detail=null,generation=0,history=true,references=false;
 const error=message=>{$('error').textContent=message||'';};

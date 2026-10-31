@@ -1,15 +1,17 @@
-import * as model from './model.mjs';
-import {renderRules,renderTask,renderReward,renderFinal,esc} from './view.mjs';
-import {mountAnnotationSurface} from './annotation-surface.mjs';
-import {smoothPath} from './annotation-geometry.mjs';
-import {SCENES} from './litter-scenes.mjs';
-import {reconcile,visibleDelta,createSaveGate} from './recovery.mjs';
-import {createStudyTransport} from './transport.mjs';
-import {config} from '../config.mjs';
-import {createDraftStore} from './draft-store.mjs';
+import * as model from './model.mjs?v=20261101-ui1';
+import {renderRules,renderTask,renderReward,renderFinal,rewardFeedback,esc} from './view.mjs?v=20261101-ui1';
+import {mountAnnotationSurface} from './annotation-surface.mjs?v=20261101-ui1';
+import {smoothPath} from './annotation-geometry.mjs?v=20261101-ui1';
+import {SCENES} from './litter-scenes.mjs?v=20261101-ui1';
+import {reconcile,visibleDelta,createSaveGate} from './recovery.mjs?v=20261101-ui1';
+import {createStudyTransport} from './transport.mjs?v=20261101-ui1';
+import {config} from '../config.mjs?v=20261101-ui1';
+import {createDraftStore} from './draft-store.mjs?v=20261101-ui1';
+import {createScenePreloader,renderScenePhoto} from './scene-assets.mjs?v=20261101-ui1';
 
 // A capability belongs to this browser/session, never an IP address.
 export function mountParticipant(root,condition){
+ const images=createScenePreloader();images.warm(0,'high');
  const pid=(new URLSearchParams(location.search).get('pid')||'').slice(0,80);
  const key=config.cacheNamespace+':'+condition+':'+pid;
  const drafts=createDraftStore({storage:localStorage,key});
@@ -55,6 +57,8 @@ export function mountParticipant(root,condition){
  function render(){
   if(disposed)return;surface?.dispose();surface=null;ready=false;
   root.classList.toggle('task-page',state.stage==='task');
+  root.classList.toggle('rules-page',state.stage==='rules');
+  root.classList.toggle('reward-page',['reward','final'].includes(state.stage));
   root.innerHTML='<div id="sync" class="sync" role="status">'+(dirty?'正在保存…':'进度已保存')+'</div>'+(state.stage==='rules'?renderRules(state):state.stage==='task'?renderTask(state):state.stage==='reward'?renderReward(state):renderFinal(state,code));
   if(state.stage!=='task')return;
   const i=state.b1.currentSceneIndex;if(sceneIndex!==i)nofind=false;sceneIndex=i;tick=performance.now();
@@ -63,10 +67,10 @@ export function mountParticipant(root,condition){
    if(busy)return;
    accrue();const next=model.addMark(state,stroke);if(next===state)root.querySelector('#notice').textContent='已达到圈画上限，请提交当前场景或结束识别。';mutate(next,false);nofind=false;surface.setMarks(state.b1.scenes[i].marks);controls();
   }});
-  const loaded=()=>{if(disposed||!photo.isConnected)return;ready=photo.naturalWidth>0;svg.dataset.ready=String(ready);root.querySelector('#photo-loading').hidden=true;root.querySelector('#photo-error').hidden=ready;controls();};
+  const loaded=()=>{if(disposed||!photo.isConnected)return;ready=photo.naturalWidth>0;svg.dataset.ready=String(ready);root.querySelector('#photo-loading').hidden=true;root.querySelector('#photo-error').hidden=ready;controls();if(ready)images.warm(i+1);};
   photo.onload=loaded;photo.onerror=loaded;if(photo.complete)loaded();
  }
- function review(){const dialog=document.createElement('dialog');dialog.className='review-dialog';dialog.innerHTML='<h2>识别记录</h2><p class="small">已提交的记录仅供查看。</p>'+state.b1.scenes.map((r,i)=>'<h3>'+esc(SCENES[i].title)+'</h3><div class="photo-shell"><img src="'+SCENES[i].image+'" alt="场景记录"><svg viewBox="0 0 1000 1000" preserveAspectRatio="none">'+r.marks.map(m=>'<path d="'+smoothPath(m.points,true)+'" class="annotation-mark"/>').join('')+'</svg></div>').join('')+'<button class="btn primary">返回领取页</button>';root.append(dialog);dialog.querySelector('button').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();dialog.showModal();}
+ function review(){const dialog=document.createElement('dialog');dialog.className='review-dialog';dialog.innerHTML='<h2>识别记录</h2><p class="small">已提交的记录仅供查看。</p>'+state.b1.scenes.map((r,i)=>'<h3>'+esc(SCENES[i].title)+'</h3><div class="photo-shell">'+renderScenePhoto(SCENES[i])+'<svg viewBox="0 0 1000 1000" preserveAspectRatio="none">'+r.marks.map(m=>'<path d="'+smoothPath(m.points,true)+'" class="annotation-mark"/>').join('')+'</svg></div>').join('')+'<button class="btn primary">返回领取页</button>';root.append(dialog);dialog.querySelector('button').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();dialog.showModal();}
  async function action(event){
   const button=event.target.closest('[data-action]');if(!button||button.disabled||busy||!state||conflict)return;
   const action=button.dataset.action;
@@ -88,7 +92,7 @@ export function mountParticipant(root,condition){
     await flush();
     const result=await api('/api/study/claim','POST',{id:state.id,revision});
     state=result.state;revision=result.revision;code=result.code;dirty=false;store();render();
-    const dialog=document.createElement('dialog');dialog.className='review-dialog';dialog.innerHTML='<h2>领取结果</h2><p>'+esc(state.reward.eligible?'您已获得奖励资格。受限于平台机制，奖励将稍后统一发放。':state.b1.scenes.some(r=>r.submittedAt!==null&&r.marks.length)?'您未完成全部6个场景，未达到奖励领取条件。':'您尚未实际参与识别，未达到奖励领取条件。')+'</p><p class="small">活动已经结束。请返回Credamo问卷录入您的随机码，继续进行作答。</p><button class="btn primary">我知道了</button>';root.append(dialog);dialog.querySelector('button').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();dialog.showModal();
+    const f=rewardFeedback(state),dialog=document.createElement('dialog');dialog.className='review-dialog result-dialog';dialog.innerHTML='<h2>'+esc(f.title)+'</h2>'+(f.detail?'<p class="result-text">'+esc(f.detail)+'</p>':'')+'<p class="result-notice">'+esc(f.notice)+'</p><p class="return-note">'+esc(f.codeInstruction)+'</p><button class="btn primary">我知道了</button>';root.append(dialog);dialog.querySelector('button').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();dialog.showModal();
    }
   }catch(e){status(e.message,true);}finally{busy=false;const claim=root.querySelector('[data-action="claim"]');if(claim)claim.disabled=false;}
  }

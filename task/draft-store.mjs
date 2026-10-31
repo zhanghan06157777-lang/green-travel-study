@@ -1,4 +1,4 @@
-import {canResume} from './model.mjs';import {reconcile} from './recovery.mjs';
+import {canResume} from './model.mjs?v=20261101-ui1';import {reconcile} from './recovery.mjs?v=20261101-ui1';
 export function createDraftStore({storage,key,writerId=crypto.randomUUID()}){
  const prefix=key+':draft:',own=prefix+writerId;
  const parse=text=>{try{return text?JSON.parse(text):null;}catch{return null;}};

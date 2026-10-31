@@ -1,4 +1,4 @@
-import { normalizeStroke, smoothPath } from './annotation-geometry.mjs';
+import { normalizeStroke, smoothPath } from './annotation-geometry.mjs?v=20261101-ui1';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_CAPTURE_POINTS = 768;
