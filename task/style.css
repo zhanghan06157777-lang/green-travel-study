@@ -66,6 +66,11 @@ body{background:radial-gradient(ellipse at 50% 10%,#f8fbf8 0,#f1f6f3 75%);min-he
 .code-box{padding:20px 24px;margin:22px 0 0;background:#f2f8f4;border:1px dashed #a7cbb5;border-radius:12px}
 .code-box>span{font-size:15px;line-height:1.8;color:#3d6551}.code-box>strong{font-size:34px;letter-spacing:4px;margin:16px 0 18px;color:#174d37}
 .result-dialog{width:min(540px,92vw);text-align:center;padding:30px;border-radius:18px}.result-dialog h2{font-size:24px;color:#086d50;margin:0 0 18px}.result-dialog .return-note{font-size:15px}.result-dialog>.btn{min-width:150px}
+.record-actions{display:inline-flex;align-items:center;gap:8px}td .record-delete{color:#a73d32;background:#fff0ed;border:1px solid #edccc6}
+.admin-notice{font-size:14px;line-height:1.7;color:#24734f}.admin-notice:empty{display:none}
+.delete-dialog{width:min(440px,92vw);border:1px solid #dce5de;border-radius:14px;padding:26px;color:#193b35;box-shadow:0 16px 60px #0d2d2520}
+.delete-dialog::backdrop{background:#0e2a2280}.delete-dialog h2{font-size:23px;margin:0 0 16px}.delete-dialog p{font-size:15px;line-height:1.9;margin:0 0 24px}
+.delete-actions{display:flex;justify-content:flex-end;gap:12px}.delete-actions .btn{min-width:96px}.danger{color:white;background:#b23e32}
 @media(min-width:761px){
  body:has(>.task-page) .site-header{height:var(--header-height)}
  .task-page{max-width:var(--layout-width);height:calc(100dvh - var(--header-height));min-height:0;padding:10px var(--gutter) 12px}

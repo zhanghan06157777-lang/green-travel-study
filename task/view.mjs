@@ -1,5 +1,5 @@
-import {SCENES} from './litter-scenes.mjs?v=20261101-ui2';import {summarize} from './model.mjs?v=20261101-ui2';
-import {renderScenePhoto} from './scene-assets.mjs?v=20261101-ui2';
+import {SCENES} from './litter-scenes.mjs?v=20261101-admin-delete1';import {summarize} from './model.mjs?v=20261101-admin-delete1';
+import {renderScenePhoto} from './scene-assets.mjs?v=20261101-admin-delete1';
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function steps(n){return '<nav class="steps" aria-label="活动进度">'+['活动规则','环境识别','奖励领取'].map((s,i)=>`<span class="${i===n?'current':''}"><b>${i+1}</b>${s}</span>`).join('<i>—</i>')+'</nav>';}
 const ticket=()=>'<div class="ticket"><div><span>绿色出行礼遇</span><h2>交通抵扣券</h2><p>奖励稍后统一发放</p></div><strong class="ticket-value" aria-label="价值2元"><span class="ticket-prefix">价值</span>2<small>元</small></strong></div>';

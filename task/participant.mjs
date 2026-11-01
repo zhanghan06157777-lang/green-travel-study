@@ -1,13 +1,14 @@
-import * as model from './model.mjs?v=20261101-ui2';
-import {renderRules,renderTask,renderReward,renderFinal,rewardFeedback,esc} from './view.mjs?v=20261101-ui2';
-import {mountAnnotationSurface} from './annotation-surface.mjs?v=20261101-ui2';
-import {smoothPath} from './annotation-geometry.mjs?v=20261101-ui2';
-import {SCENES} from './litter-scenes.mjs?v=20261101-ui2';
-import {reconcile,visibleDelta,createSaveGate} from './recovery.mjs?v=20261101-ui2';
-import {createStudyTransport} from './transport.mjs?v=20261101-ui2';
-import {config} from '../config.mjs?v=20261101-ui2';
-import {createDraftStore} from './draft-store.mjs?v=20261101-ui2';
-import {createScenePreloader,renderScenePhoto} from './scene-assets.mjs?v=20261101-ui2';
+import * as model from './model.mjs?v=20261101-admin-delete1';
+import {renderRules,renderTask,renderReward,renderFinal,rewardFeedback,esc} from './view.mjs?v=20261101-admin-delete1';
+import {mountAnnotationSurface} from './annotation-surface.mjs?v=20261101-admin-delete1';
+import {smoothPath} from './annotation-geometry.mjs?v=20261101-admin-delete1';
+import {SCENES} from './litter-scenes.mjs?v=20261101-admin-delete1';
+import {reconcile,visibleDelta,createSaveGate} from './recovery.mjs?v=20261101-admin-delete1';
+import {createStudyTransport} from './transport.mjs?v=20261101-admin-delete1';
+import {config} from '../config.mjs?v=20261101-admin-delete1';
+import {createDraftStore} from './draft-store.mjs?v=20261101-admin-delete1';
+import {createScenePreloader,renderScenePhoto} from './scene-assets.mjs?v=20261101-admin-delete1';
+import {createSessionRetirement} from './session-retirement.mjs?v=20261101-admin-delete1';
 
 // A capability belongs to this browser/session, never an IP address.
 export function mountParticipant(root,condition){
@@ -19,6 +20,7 @@ export function mountParticipant(root,condition){
  let cache,state,revision=0,code='',surface=null,disposed=false,ready=false,nofind=false,busy=false;
  let dirty=false,mutations=0,saveTimer=null,tick=performance.now(),sceneIndex=-1,wasVisible=!document.hidden,conflict=false;
  const abort=new AbortController();
+ const retirement=createSessionRetirement(()=>{dirty=false;conflict=true;busy=false;ready=false;clearTimeout(saveTimer);clearInterval(interval);surface?.dispose();surface=null;root.classList.remove('task-page','rules-page','reward-page');root.innerHTML='<section class="panel"><h1>该活动记录已删除或已失效</h1><p>无法继续识别或领取奖励。请返回问卷并联系研究者。</p></section>';releaseLease?.();releaseLease=null;});
  function store(){drafts.write({token:cache.token,state,revision,dirty});if(!dirty)drafts.acknowledge(state,cache.token);}
  function status(message,error=false){const box=root.querySelector('#sync');if(box){box.className='sync'+(error?' error':'');box.innerHTML=esc(message)+(error?' <button data-action="sync">重试保存</button>':'');}}
  async function api(path,method='GET',data){return createStudyTransport({...config,token:cache.token,signal:abort.signal})(path,method,data);}
@@ -41,10 +43,11 @@ export function mountParticipant(root,condition){
    }
    status('进度已保存');
   }catch(e){
+   if(retirement.handle(e))throw e;
    status(e.status===409?'进度已在其他页面更新。请刷新，以服务器记录为准。':e.message+'；记录已保存在当前浏览器，请重试。',true);
    throw e;
   }});
- function accrue(){const now=performance.now(),dt=visibleDelta(tick,now,wasVisible);tick=now;if(state?.stage!=='task'||!dt||!ready||busy||conflict)return;
+ function accrue(){const now=performance.now(),dt=visibleDelta(tick,now,wasVisible);tick=now;if(retirement.retired||state?.stage!=='task'||!dt||!ready||busy||conflict)return;
   const i=state.b1.currentSceneIndex,r=state.b1.scenes[i];
   state={...state,b1:{...state.b1,foregroundMs:state.b1.foregroundMs+dt,scenes:state.b1.scenes.map((v,j)=>j===i?{...r,foregroundMs:r.foregroundMs+dt}:v)}};
   remember();
@@ -72,7 +75,7 @@ export function mountParticipant(root,condition){
  }
  function review(){const dialog=document.createElement('dialog');dialog.className='review-dialog';dialog.innerHTML='<h2>识别记录</h2><p class="small">已提交的记录仅供查看。</p>'+state.b1.scenes.map((r,i)=>'<h3>'+esc(SCENES[i].title)+'</h3><div class="photo-shell">'+renderScenePhoto(SCENES[i])+'<svg viewBox="0 0 1000 1000" preserveAspectRatio="none">'+r.marks.map(m=>'<path d="'+smoothPath(m.points,true)+'" class="annotation-mark"/>').join('')+'</svg></div>').join('')+'<button class="btn primary">返回领取页</button>';root.append(dialog);dialog.querySelector('button').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();dialog.showModal();}
  async function action(event){
-  const button=event.target.closest('[data-action]');if(!button||button.disabled||busy||!state||conflict)return;
+  const button=event.target.closest('[data-action]');if(!button||button.disabled||busy||!state||conflict||retirement.retired)return;
   const action=button.dataset.action;
   try{
    if(action==='sync'){await flush();return;}
@@ -94,7 +97,7 @@ export function mountParticipant(root,condition){
     state=result.state;revision=result.revision;code=result.code;dirty=false;store();render();
     const f=rewardFeedback(state),dialog=document.createElement('dialog');dialog.className='review-dialog result-dialog';dialog.innerHTML='<h2>'+esc(f.title)+'</h2>'+(f.detail?'<p class="result-text">'+esc(f.detail)+'</p>':'')+'<p class="result-notice">'+esc(f.notice)+'</p><p class="return-note">'+esc(f.codeInstruction)+'</p><button class="btn primary">我知道了</button>';root.append(dialog);dialog.querySelector('button').onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();dialog.showModal();
    }
-  }catch(e){status(e.message,true);}finally{busy=false;const claim=root.querySelector('[data-action="claim"]');if(claim)claim.disabled=false;}
+  }catch(e){if(!retirement.handle(e))status(e.message,true);}finally{busy=false;const claim=root.querySelector('[data-action="claim"]');if(claim)claim.disabled=false;}
  }
  root.addEventListener('click',action);
  const interval=setInterval(accrue,15000);
@@ -110,8 +113,8 @@ export function mountParticipant(root,condition){
    revision=result.revision;code=result.code;
    state=drafts.recover(result.state,cache.token)||result.state;
    dirty=state!==result.state;store();render();if(dirty)await flush();
-  }catch(e){if(!disposed){root.innerHTML='<section class="panel"><h1>暂时无法进入活动</h1><p>'+esc(e.message)+'</p><p>请保留当前浏览器，并刷新重试。</p><button class="btn primary" data-action="reload">刷新重试</button></section>';root.querySelector('button').onclick=()=>location.reload();}}
+  }catch(e){if(!disposed&&!retirement.handle(e)){root.innerHTML='<section class="panel"><h1>暂时无法进入活动</h1><p>'+esc(e.message)+'</p><p>请保留当前浏览器，并刷新重试。</p><button class="btn primary" data-action="reload">刷新重试</button></section>';root.querySelector('button').onclick=()=>location.reload();}}
  }
- if(navigator.locks?.request){navigator.locks.request(key,{ifAvailable:true},async lock=>{if(!lock){root.innerHTML='<section class="panel"><h1>活动已在另一个页面打开</h1><p>请在原页面继续；如需使用本页，请关闭另一个活动页面后刷新。</p><button class="btn primary">重新检查</button></section>';root.querySelector('button').onclick=()=>location.reload();return;}await init();if(!disposed)await new Promise(resolve=>releaseLease=resolve);}).catch(()=>{if(!disposed)root.innerHTML='<section class="panel">无法协调活动页面，请关闭其他活动页后刷新重试。</section>';});}else init();
+ if(navigator.locks?.request){navigator.locks.request(key,{ifAvailable:true},async lock=>{if(!lock){root.innerHTML='<section class="panel"><h1>活动已在另一个页面打开</h1><p>请在原页面继续；如需使用本页，请关闭另一个活动页面后刷新。</p><button class="btn primary">重新检查</button></section>';root.querySelector('button').onclick=()=>location.reload();return;}await init();if(!disposed&&!retirement.retired)await new Promise(resolve=>releaseLease=resolve);}).catch(()=>{if(!disposed)root.innerHTML='<section class="panel">无法协调活动页面，请关闭其他活动页后刷新重试。</section>';});}else init();
  return ()=>{disposed=true;releaseLease?.();clearInterval(interval);clearTimeout(saveTimer);surface?.dispose();abort.abort();root.removeEventListener('click',action);document.removeEventListener('visibilitychange',visible);window.removeEventListener('beforeunload',before);window.removeEventListener('online',online);};
 }
