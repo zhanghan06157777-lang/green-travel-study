@@ -1,5 +1,5 @@
-import {esc} from '../task/view.mjs?v=20261101-admin-delete1';import {SCENES} from '../task/litter-scenes.mjs?v=20261101-admin-delete1';import {smoothPath} from '../task/annotation-geometry.mjs?v=20261101-admin-delete1';
-import {renderScenePhoto} from '../task/scene-assets.mjs?v=20261101-admin-delete1';
+import {esc} from '../task/view.mjs?v=20261102-rules1';import {SCENES} from '../task/litter-scenes.mjs?v=20261102-rules1';import {smoothPath} from '../task/annotation-geometry.mjs?v=20261102-rules1';
+import {renderScenePhoto} from '../task/scene-assets.mjs?v=20261102-rules1';
 export const time=v=>v==null?'—':new Date(v).toLocaleString('zh-CN');
 export function renderDetail(detail,{history=true,references=false}={}){
  const s=detail.state;

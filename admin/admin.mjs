@@ -1,6 +1,6 @@
-import {config} from '../config.mjs?v=20261101-admin-delete1';import {esc} from '../task/view.mjs?v=20261101-admin-delete1';import {renderDetail,time} from './render.mjs?v=20261101-admin-delete1';
-import {createResponseGate} from './response-gate.mjs?v=20261101-admin-delete1';
-import {createDeleteFlow,renderRecordActions,renderDeleteConfirmation,clampRecordPage} from './deletion.mjs?v=20261101-admin-delete1';
+import {config} from '../config.mjs?v=20261102-rules1';import {esc} from '../task/view.mjs?v=20261102-rules1';import {renderDetail,time} from './render.mjs?v=20261102-rules1';
+import {createResponseGate} from './response-gate.mjs?v=20261102-rules1';
+import {createDeleteFlow,renderRecordActions,renderDeleteConfirmation,clampRecordPage} from './deletion.mjs?v=20261102-rules1';
 const sessionGate=createResponseGate(),detailGate=createResponseGate();
 const $=id=>document.getElementById(id);let session=null,page=0,total=0,detail=null,generation=0,history=true,references=false,deleteDialog=null;
 const error=message=>{$('error').textContent=message||'';};

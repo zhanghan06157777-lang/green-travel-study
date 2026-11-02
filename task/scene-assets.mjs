@@ -1,4 +1,4 @@
-import {SCENES} from './litter-scenes.mjs?v=20261101-admin-delete1';
+import {SCENES} from './litter-scenes.mjs?v=20261102-rules1';
 const optimized=scene=>new URL('./images/'+scene.id+'.webp',import.meta.url).href;
 export function renderScenePhoto(scene,{interactive=false}={}){
  return `<picture><source type="image/webp" srcset="${optimized(scene)}"><img ${interactive?'id="photo" fetchpriority="high"':'loading="lazy"'} src="${scene.image}" alt="${scene.title}环境照片" decoding="async" draggable="false"></picture>`;

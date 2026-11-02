@@ -1,14 +1,14 @@
-import * as model from './model.mjs?v=20261101-admin-delete1';
-import {renderRules,renderTask,renderReward,renderFinal,rewardFeedback,esc} from './view.mjs?v=20261101-admin-delete1';
-import {mountAnnotationSurface} from './annotation-surface.mjs?v=20261101-admin-delete1';
-import {smoothPath} from './annotation-geometry.mjs?v=20261101-admin-delete1';
-import {SCENES} from './litter-scenes.mjs?v=20261101-admin-delete1';
-import {reconcile,visibleDelta,createSaveGate} from './recovery.mjs?v=20261101-admin-delete1';
-import {createStudyTransport} from './transport.mjs?v=20261101-admin-delete1';
-import {config} from '../config.mjs?v=20261101-admin-delete1';
-import {createDraftStore} from './draft-store.mjs?v=20261101-admin-delete1';
-import {createScenePreloader,renderScenePhoto} from './scene-assets.mjs?v=20261101-admin-delete1';
-import {createSessionRetirement} from './session-retirement.mjs?v=20261101-admin-delete1';
+import * as model from './model.mjs?v=20261102-rules1';
+import {renderRules,renderTask,renderReward,renderFinal,rewardFeedback,esc} from './view.mjs?v=20261102-rules1';
+import {mountAnnotationSurface} from './annotation-surface.mjs?v=20261102-rules1';
+import {smoothPath} from './annotation-geometry.mjs?v=20261102-rules1';
+import {SCENES} from './litter-scenes.mjs?v=20261102-rules1';
+import {reconcile,visibleDelta,createSaveGate} from './recovery.mjs?v=20261102-rules1';
+import {createStudyTransport} from './transport.mjs?v=20261102-rules1';
+import {config} from '../config.mjs?v=20261102-rules1';
+import {createDraftStore} from './draft-store.mjs?v=20261102-rules1';
+import {createScenePreloader,renderScenePhoto} from './scene-assets.mjs?v=20261102-rules1';
+import {createSessionRetirement} from './session-retirement.mjs?v=20261102-rules1';
 
 // A capability belongs to this browser/session, never an IP address.
 export function mountParticipant(root,condition){
